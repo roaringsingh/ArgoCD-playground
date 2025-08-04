@@ -1,9 +1,9 @@
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  name: widgets.new.example.com
+  name: widgetns.example.com
   annotations:
-    argocd.argoproj.io/tracking-id: crd-app:argocd:CustomResourceDefinition:widgets.new.example.com
+    argocd.argoproj.io/tracking-id: crd-app:argocd:CustomResourceDefinition:widgetns.example.com
 spec:
   group: example.com
   versions:
