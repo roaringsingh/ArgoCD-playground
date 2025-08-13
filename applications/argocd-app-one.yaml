@@ -1,0 +1,19 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: demoapp-one
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/roaringsingh/ArgoCD-playground.git'
+    targetRevision: HEAD
+    path: crd-demo-1
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  # syncPolicy:
+  #   automated:
+  #     prune: true
+  #     selfHeal: true
