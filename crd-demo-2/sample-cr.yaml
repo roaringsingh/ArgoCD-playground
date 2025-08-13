@@ -1,0 +1,29 @@
+# demoapp1.yaml
+apiVersion: demo.mycompany.com/v1alpha1
+kind: DemoApp
+metadata:
+  name: app-one
+  namespace: default
+spec:
+  image: nginx:latest
+  replicas: 2
+---
+# demoapp2.yaml
+apiVersion: demo.mycompany.com/v1alpha1
+kind: DemoApp
+metadata:
+  name: app-two
+  namespace: default
+spec:
+  image: httpd:latest
+  replicas: 1
+---
+# demoapp3.yaml
+apiVersion: demo.mycompany.com/v1alpha1
+kind: DemoApp
+metadata:
+  name: app-three
+  namespace: default
+spec:
+  image: redis:latest
+  replicas: 1
