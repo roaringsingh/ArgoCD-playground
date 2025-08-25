@@ -13,9 +13,9 @@ spec:
     helm:
       parameters:
         - name: gitRevision
-          value: "{{ .ARGOCD_APP_REVISION }}"
+          value: $ARGOCD_APP_REVISION
         - name: ArgoCDAppName
-          value: "{{ .ARGOCD_APP_NAME}}"
+          value: $ARGOCD_APP_NAME
   destination:
     server: https://kubernetes.default.svc
     namespace: default
