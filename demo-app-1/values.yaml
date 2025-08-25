@@ -1,6 +1,8 @@
 # Default values for demo-app-1.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
+ArgoCDAppName: ""
+gitRevision: ""
 
 replicaCount: 1
 
