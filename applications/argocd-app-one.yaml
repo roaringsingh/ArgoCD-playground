@@ -9,7 +9,7 @@ spec:
   source:
     repoURL: 'https://github.com/roaringsingh/ArgoCD-playground.git'
     targetRevision: HEAD
-    path: crd-demo-1
+    path: demo-app-1
     helm:
       values: |
         gitRevision: "{{ .ARGOCD_APP_REVISION }}"
