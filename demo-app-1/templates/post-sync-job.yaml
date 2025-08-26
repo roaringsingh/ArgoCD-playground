@@ -18,6 +18,7 @@ spec:
           - |
             #!/bin/bash
             set -euo pipefail
+            echo "$ARGOCD_APP_REVISION not set"
             CURRENT_TAG="$ARGOCD_APP_REVISION"
             STALE_CRDS=()
             for crd in $(oc get crds -l managed-by=my-app -o jsonpath='{.items[*].metadata.name}'); do
