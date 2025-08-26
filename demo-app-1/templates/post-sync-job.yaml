@@ -14,6 +14,11 @@ spec:
       - name: update-pull-secret
         image: repository.adp.amadeus.net/acs-sre-docker-production-mtpaas-nce-remote/acs_sre_images/ubi9-oc414-minimal:master-20250415_152547-79748ed
         command: ["/bin/sh", "-c"]
+        env:
+          - name: ARGOCD_APP_NAME
+            value: .Values.gitRevision
+          - name: ARGOCD_APP_REVISION
+            value: .Values.gitRevision
         args:
           - |
             #!/bin/bash
