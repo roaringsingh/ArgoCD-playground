@@ -4,4 +4,4 @@ metadata:
   name: sync-trigger
   namespace: default
 data:
-  timestamp: "{{ now | date '20060102150405' }}"
+  timestamp: "{{ now | date "20060102150405" }}"
