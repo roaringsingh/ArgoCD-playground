@@ -9,6 +9,7 @@ metadata:
 spec:
   template:
     spec:
+      backoffLimit: 3
       serviceAccountName: delete-sa
       containers:
       - name: update-pull-secret
@@ -47,7 +48,7 @@ spec:
             #   echo "CRD $crd deleted"
             # done
             for crd in "${STALE_CRDS[@]}"; do
-              oc label crd "$crd" stale="true" markedAT="$(date -u +%Y-%m-%dT%H.%M.%SZ)"
+              oc label crd "$crd" stale="true" stale/markedAT="$(date -u +%Y-%m-%dT%H.%M.%SZ) --overwrite"
               oc delete crd "$crd"
               echo "CRD $crd deleted"
             done
@@ -55,7 +56,7 @@ spec:
               echo "⚠️ The following CRDs were not deleted because they still have CRs:"
               for crd in "${IN_USE_CRDS[@]}"; do
                 echo " - $crd"
-                oc label crd "$crd" orphaned="true" markedAT="$(date -u +%Y-%m-%dT%H.%M.%SZ)"
+                oc label crd "$crd" orphaned="true" orphaned/markedAT="$(date -u +%Y-%m-%dT%H.%M.%SZ) --overwrite"
               done
               exit 1
             fi
