@@ -12,7 +12,7 @@ spec:
       # serviceAccountName: cleanup-sa
       containers:
       - name: update-pull-secret
-        image: acs-sre-docker-production-mtpaas/acs_sre_images/ubi9-oc414-minimal:master-20250314_141334-5be17ed
+        image: repository.adp.amadeus.net/acs-sre-docker-production-mtpaas-nce-remote/acs_sre_images/ubi9-oc414-minimal:master-20250415_152547-79748ed
         command: ["/bin/sh", "-c"]
         args:
           - |
