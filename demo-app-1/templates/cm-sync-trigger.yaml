@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sync-trigger
+  namespace: default
+data:
+  timestamp: "{{ now | date '20060102150405' }}"
