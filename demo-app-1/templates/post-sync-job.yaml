@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: CRD-deletion 
+  name: crd-deletion 
   namespace: default
   annotations:
     argocd.argoproj.io/hook: PostSync
