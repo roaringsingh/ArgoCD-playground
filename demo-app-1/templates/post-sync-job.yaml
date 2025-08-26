@@ -1,0 +1,39 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: CRD-deletion 
+  namespace: default
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    # argocd.argoproj.io/hook-delete-policy: BeforeHookCreation  
+spec:
+  template:
+    spec:
+      # serviceAccountName: cleanup-sa
+      containers:
+      - name: update-pull-secret
+        image: acs-sre-docker-production-mtpaas/acs_sre_images/ubi9-oc414-minimal:master-20250314_141334-5be17ed
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            #!/bin/bash
+            set -euo pipefail
+            CURRENT_TAG="$ARGOCD_APP_REVISION"
+            STALE_CRDS=()
+            for crd in $(oc get crds -l managed-by=my-app -o jsonpath='{.items[*].metadata.name}'); do
+              crd_tag=$(oc get crd "$crd" -o jsonpath='{.metadata.labels.git-tag}')
+              echo "Found CRD $crd with tag $crd_tag"
+              if [[ "$crd_tag" != "$CURRENT_TAG" ]]; then
+                # check if CRs exist
+                if ! oc get "$crd" 2>/dev/null | grep -q .; then
+                  echo "Marking CRD $crd for deletion"
+                  STALE_CRDS+=("$crd")
+                else
+                  echo "⚠️ CRD $crd still has CRs, skipping"
+                fi
+              fi
+            done
+            for crd in "${STALE_CRDS[@]}"; do
+              oc delete crd "$crd"
+            done
+      restartPolicy: Never
