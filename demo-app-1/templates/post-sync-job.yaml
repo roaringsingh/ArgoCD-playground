@@ -23,11 +23,11 @@ spec:
           - |
             #!/bin/bash
             set -euo pipefail
-            echo "$ARGOCD_APP_REVISION not set"
+            echo "$ARGOCD_APP_REVISION new tag set"
             CURRENT_TAG="$ARGOCD_APP_REVISION"
             STALE_CRDS=()
-            for crd in $(oc get crds -l managed-by=my-app -o jsonpath='{.items[*].metadata.name}'); do
-              crd_tag=$(oc get crd "$crd" -o jsonpath='{.metadata.labels.git-tag}')
+            for crd in $(oc get crds -l app.kubernetes.io/managed-by="$ARGOCD_APP_NAME" -o jsonpath='{.items[*].metadata.name}'); do
+              crd_tag=$(oc get crd "$crd" -o jsonpath='{.metadata.labels.git-revision}')
               echo "Found CRD $crd with tag $crd_tag"
               if [[ "$crd_tag" != "$CURRENT_TAG" ]]; then
                 # check if CRs exist
