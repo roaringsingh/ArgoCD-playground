@@ -26,6 +26,7 @@ spec:
             echo "$ARGOCD_APP_REVISION new tag set"
             CURRENT_TAG="$ARGOCD_APP_REVISION"
             STALE_CRDS=()
+            IN_USE_CRDS=()
             for crd in $(oc get crds -l app.kubernetes.io/managed-by=$ARGOCD_APP_NAME -o jsonpath='{.items[*].metadata.name}'); do
               crd_tag=$(oc get crd "$crd" -o jsonpath='{.metadata.labels.git-revision}')
               echo "Found CRD $crd with tag $crd_tag"
@@ -36,10 +37,26 @@ spec:
                   STALE_CRDS+=("$crd")
                 else
                   echo "⚠️ CRD $crd still has CRs, skipping"
+                  IN_USE_CRDS+=("$crd")
                 fi
               fi
             done
+            # for crd in $(oc get crds -l app.kubernetes.io/managed-by=$ARGOCD_APP_NAME,stale=true -o jsonpath='{.items[*].metadata.name}'); do
+            #   echo "Deleting previously marked stale CRD $crd"
+            #   oc delete crd "$crd"
+            #   echo "CRD $crd deleted"
+            # done
             for crd in "${STALE_CRDS[@]}"; do
+              oc label crd "$crd" stale="true" markedAT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
               oc delete crd "$crd"
+              echo "CRD $crd deleted"
             done
+            if [ ${#IN_USE_CRDS[@]} -ne 0 ]; then
+              echo "⚠️ The following CRDs were not deleted because they still have CRs:"
+              for crd in "${IN_USE_CRDS[@]}"; do
+                echo " - $crd"
+                oc label crd "$crd" orphaned="true" markedAT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+              done
+              exit 1
+            fi
       restartPolicy: Never
