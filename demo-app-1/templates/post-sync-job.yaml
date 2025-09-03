@@ -28,7 +28,7 @@ spec:
         args:
           - |
             #!/bin/bash
-            set -euo pipefail
+            set -eo pipefail
             echo "$ARGOCD_APP_REVISION new chart version set"
             CURRENT_TAG="$ARGOCD_APP_REVISION"
             for crd in $(oc get crds -l app.kubernetes.io/managed-by=$ARGOCD_APP_NAME -o jsonpath='{.items[*].metadata.name}'); do
