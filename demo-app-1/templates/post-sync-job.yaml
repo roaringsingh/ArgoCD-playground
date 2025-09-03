@@ -29,40 +29,27 @@ spec:
           - |
             #!/bin/bash
             set -euo pipefail
-            echo "$ARGOCD_APP_REVISION new tag set"
+            echo "$ARGOCD_APP_REVISION new chart version set"
             CURRENT_TAG="$ARGOCD_APP_REVISION"
-            STALE_CRDS=()
-            IN_USE_CRDS=()
             for crd in $(oc get crds -l app.kubernetes.io/managed-by=$ARGOCD_APP_NAME -o jsonpath='{.items[*].metadata.name}'); do
-              crd_tag=$(oc get crd "$crd" -o jsonpath='{.metadata.labels.git-revision}')
-              echo "Found CRD $crd with tag $crd_tag"
+              crd_tag=$(oc get crd "$crd" -o jsonpath='{.metadata.labels.argocd-app-revision}')
+              echo "Found CRD $crd with revision label $crd_tag"
+              if [[ -z "$crd_tag" ]]; then
+                echo "CRD $crd is missing 'argocd-app-revision' label. Failing..."
+                exit 1
+              fi
               if [[ "$crd_tag" != "$CURRENT_TAG" ]]; then
                 # check if CRs exist
-                if ! oc get "$crd" 2>/dev/null | grep -q .; then
+                if ! oc get "$crd" -A 2>/dev/null | grep -q .; then
                   echo "Marking CRD $crd for deletion"
-                  STALE_CRDS+=("$crd")
+                  oc label crd "$crd" stale="true" stale-marked-at="$(date -u +%Y-%m-%dT%H-%M-%SZ)" --overwrite
+                  oc delete crd "$crd"
+                  echo "CRD $crd deleted"
                 else
-                  echo "⚠️ CRD $crd still has CRs, skipping"
-                  IN_USE_CRDS+=("$crd")
+                  echo "CRD $crd still has CRs, failing..."
+                  oc label crd "$crd" orphaned="true" orphaned-marked-at="$(date -u +%Y-%m-%dT%H-%M-%SZ)" --overwrite
+                  exit 1
                 fi
               fi
             done
-            # for crd in $(oc get crds -l app.kubernetes.io/managed-by=$ARGOCD_APP_NAME,stale=true -o jsonpath='{.items[*].metadata.name}'); do
-            #   echo "Deleting previously marked stale CRD $crd"
-            #   oc delete crd "$crd"
-            #   echo "CRD $crd deleted"
-            # done
-            for crd in "${STALE_CRDS[@]}"; do
-              oc label crd "$crd" stale="true" stale-markedAT="$(date -u +%Y-%m-%dT%H.%M.%SZ)" --overwrite
-              oc delete crd "$crd"
-              echo "CRD $crd deleted"
-            done
-            if [ ${#IN_USE_CRDS[@]} -ne 0 ]; then
-              echo "⚠️ The following CRDs were not deleted because they still have CRs:"
-              for crd in "${IN_USE_CRDS[@]}"; do
-                echo " - $crd"
-                oc label crd "$crd" orphaned="true" orphaned-markedAT="$(date -u +%Y-%m-%dT%H.%M.%SZ)" --overwrite
-              done
-              exit 1
-            fi
       restartPolicy: Never
