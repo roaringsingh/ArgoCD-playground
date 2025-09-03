@@ -11,7 +11,7 @@ spec:
     targetRevision: HEAD
     path: demo-app-1
     helm:
-      values:
+      values: |
         gitRevision: $ARGOCD_APP_REVISION
         ArgoCDAppName: $ARGOCD_APP_NAME
   destination:
