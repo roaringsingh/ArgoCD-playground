@@ -22,9 +22,9 @@ spec:
         command: ["/bin/sh", "-c"]
         env:
           - name: ARGOCD_APP_NAME
-            value: "{{.Values.ArgoCDAppName}}"
+            value: '{{.Values.ArgoCDAppName}}'
           - name: ARGOCD_APP_REVISION
-            value: "{{.Values.gitRevision}}"
+            value: '{{.Values.gitRevision}}'
         args:
           - |
             #!/bin/bash
