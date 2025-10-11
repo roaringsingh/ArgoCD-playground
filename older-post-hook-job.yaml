@@ -1,0 +1,56 @@
+# apiVersion: batch/v1
+# kind: Job
+# metadata:
+#   name: crd-deletion 
+#   namespace: default
+#   annotations:
+#     argocd.argoproj.io/hook: PostSync
+#     argocd.argoproj.io/hook-delete-policy: BeforeHookCreation  
+# spec:
+#   backoffLimit: 3
+#   podFailurePolicy:
+#     rules:
+#     - action: Ignore
+#       onPodConditions:
+#       - type: DisruptionTarget
+#   template:
+#     spec:
+#       serviceAccountName: delete-sa
+#       containers:
+#       - name: update-pull-secret
+#         image: repository.adp.amadeus.net/acs-sre-docker-production-mtpaas-nce-remote/acs_sre_images/ubi9-oc414-minimal:master-20250415_152547-79748ed
+#         command: ["/bin/sh", "-c"]
+#         env:
+#           - name: ARGOCD_APP_NAME
+#             value: '{{.Values.ArgoCDAppName}}'
+#           - name: ARGOCD_APP_REVISION
+#             value: '{{.Values.gitRevision}}'
+#         args:
+#           - |
+#             #!/bin/bash
+#             env
+#             set -eo pipefail
+#             echo "$ARGOCD_APP_REVISION new chart version set"
+#             CURRENT_TAG="$ARGOCD_APP_REVISION"
+#             for crd in $(oc get crds -l app.kubernetes.io/managed-by=$ARGOCD_APP_NAME -o jsonpath='{.items[*].metadata.name}'); do
+#               crd_tag=$(oc get crd "$crd" -o jsonpath='{.metadata.labels.argocd-app-revision}')
+#               echo "Found CRD $crd with revision label $crd_tag"
+#               if [[ -z "$crd_tag" ]]; then
+#                 echo "CRD $crd is missing 'argocd-app-revision' label. Failing..."
+#                 exit 1
+#               fi
+#               if [[ "$crd_tag" != "$CURRENT_TAG" ]]; then
+#                 # check if CRs exist
+#                 if ! oc get "$crd" -A 2>/dev/null | grep -q .; then
+#                   echo "Marking CRD $crd for deletion"
+#                   oc label crd "$crd" stale="true" stale-marked-at="$(date -u +%Y-%m-%dT%H-%M-%SZ)" --overwrite
+#                   oc delete crd "$crd"
+#                   echo "CRD $crd deleted"
+#                 else
+#                   echo "CRD $crd still has CRs, failing..."
+#                   oc label crd "$crd" orphaned="true" orphaned-marked-at="$(date -u +%Y-%m-%dT%H-%M-%SZ)" --overwrite
+#                   exit 1
+#                 fi
+#               fi
+#             done
+#       restartPolicy: Never

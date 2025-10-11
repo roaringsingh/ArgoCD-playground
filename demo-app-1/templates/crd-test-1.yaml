@@ -4,8 +4,8 @@ metadata:
   # argocd.argoproj.io/tracking-id: demoapp-one:apiextensions.k8s.io/CustomResourceDefinition:widgets.example.com
   name: widgets.example.com
   labels:
-    app.kubernetes.io/managed-by: {{ .Values.ArgoCDAppName | quote }}
-    git-revision: {{ .Values.gitRevision | quote }}
+    app.kubernetes.io/managed-by: {{.Values.para_ArgoCDAppName}}
+    argocd-app-revision: {{.Values.para_AppRevision}}
 spec:
   group: example.com
   versions:

@@ -1,0 +1,35 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: crd-deletion 
+  namespace: default
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation  
+spec:
+  backoffLimit: 1
+  podFailurePolicy:
+    rules:
+    - action: Ignore
+      onPodConditions:
+      - type: DisruptionTarget
+  template:
+    spec:
+      serviceAccountName: delete-sa
+      restartPolicy: Never
+      containers:
+      - name: check-and-delete-crds
+        image: dockerhub.rnd.amadeus.net/acs-sre-docker-production-mtpaas/acs_sre_images/ubi10-oc416-minimal:master-20251003_125626-2ecde29
+        command: ["/bin/sh", "/scripts/script.sh"]
+        env:
+          - name: ARGOCD_APP_NAME
+            value: "{{.Values.para_ArgoCDAppName}}"
+          - name: ARGOCD_APP_REVISION
+            value: "{{.Values.para_AppRevision}}"
+        volumeMounts:
+        - name: script-volume
+          mountPath: /scripts
+      volumes:
+      - name: script-volume
+        configMap:
+          name: crd-deletion-script

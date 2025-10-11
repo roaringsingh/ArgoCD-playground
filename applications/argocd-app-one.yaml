@@ -12,9 +12,9 @@ spec:
     path: demo-app-1
     helm:
       parameters:
-        - name: gitRevision
+        - name: para_AppRevision
           value: $ARGOCD_APP_REVISION
-        - name: ArgoCDAppName
+        - name: para_ArgoCDAppName
           value: $ARGOCD_APP_NAME
   destination:
     server: https://kubernetes.default.svc
