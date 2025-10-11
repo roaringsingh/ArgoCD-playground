@@ -19,7 +19,7 @@ data:
       if [[ "$crd_tag" != "$CURRENT_TAG" ]]; then
         # check if CRs exist, enter delete only if no CRs exist
         output=$(oc get "$crd" -A 2>&1)
-        if [[ "$output" == "No resources found" ]]; then
+        if [[ "$output" == "No resources found" && $? -eq 0 ]]; then
           echo "Marking CRD $crd for deletion"
           # oc label crd "$crd" stale="true" stale-marked-at="$(date -u +%Y-%m-%dT%H-%M-%SZ)" --overwrite
           # oc delete crd "$crd"
