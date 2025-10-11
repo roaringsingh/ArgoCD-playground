@@ -32,3 +32,11 @@ data:
         fi
       fi
     done
+
+# Not fully safe. Fragile points:
+
+# Matching exact string "No resources found" (locale / format dependent)
+# Cannot distinguish "no CRs" vs transient API error that still prints something else (network, RBAC)
+# Deletes immediately without labeling / retry / safety checks
+# Ignores exit code of oc get (set -e doesn't trigger because you capture output with command substitution; failures still look like success)
+# No retry on listing
