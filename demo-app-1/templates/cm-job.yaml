@@ -7,6 +7,10 @@ data:
   script.sh: |
     #!/bin/bash
     set -euo pipefail
+    if [[ ! "$ARGOCD_APP_REVISION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+      echo "ARGOCD_APP_REVISION ($ARGOCD_APP_REVISION) is not in the format number.number.number"
+      exit 1
+    fi
     echo "$ARGOCD_APP_REVISION new chart version set"
     CURRENT_TAG="$ARGOCD_APP_REVISION"
     for crd in $(oc get crds -l app.kubernetes.io/managed-by=$ARGOCD_APP_NAME -o jsonpath='{.items[*].metadata.name}'); do
@@ -19,15 +23,14 @@ data:
       if [[ "$crd_tag" != "$CURRENT_TAG" ]]; then
         # check if CRs exist, enter delete only if no CRs exist
         output=$(oc get "$crd" -A 2>&1)
-        if [[ "$output" == "No resources found" && $? -eq 0 ]]; then
+        if [[ "$output" == "No resources found"  && $? -eq 0 ]]; then
           echo "Marking CRD $crd for deletion"
-          # oc label crd "$crd" stale="true" stale-marked-at="$(date -u +%Y-%m-%dT%H-%M-%SZ)" --overwrite
-          # oc delete crd "$crd"
+          oc delete crd "$crd"
           echo "CRD $crd deleted"
         else
           echo "CRD $crd still has CRs or some other error occured, failing..."
           echo "Output: $output"
-          # oc label crd "$crd" orphaned="true" orphaned-marked-at="$(date -u +%Y-%m-%dT%H-%M-%SZ)" --overwrite
+          oc label crd "$crd" orphaned="true" orphaned-marked-at="$(date -u +%Y-%m-%dT%H-%M-%SZ)" --overwrite
           exit 1
         fi
       fi
