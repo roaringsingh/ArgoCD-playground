@@ -7,10 +7,10 @@ data:
   script.sh: |
     #!/bin/bash
     set -euo pipefail
-    if [[ ! "$ARGOCD_APP_REVISION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-      echo "ARGOCD_APP_REVISION ($ARGOCD_APP_REVISION) is not in the format number.number.number"
-      exit 1
-    fi
+    # if [[ ! "$ARGOCD_APP_REVISION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    #   echo "ARGOCD_APP_REVISION ($ARGOCD_APP_REVISION) is not in the format number.number.number"
+    #   exit 1
+    # fi
     echo "$ARGOCD_APP_REVISION new chart version set"
     CURRENT_TAG="$ARGOCD_APP_REVISION"
     for crd in $(oc get crds -l app.kubernetes.io/managed-by=$ARGOCD_APP_NAME -o jsonpath='{.items[*].metadata.name}'); do
